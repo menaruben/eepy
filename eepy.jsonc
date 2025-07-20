@@ -1,0 +1,38 @@
+{
+    /*
+        The `shell` section defines the shell to be used for executing commands.
+        The `executable` specifies the shell program, and `args` are the arguments passed to it.
+    */
+    "shell": {
+        "executable": "cmd.exe",
+        "args": [
+            "/c"
+        ]
+    },
+    /*
+        The `commands` section defines custom commands that can be executed.
+        Each command has a `description` and a `cmd` array containing the command to run. 
+        The commands will just be joinedd by a space and executed in the specified shell. 
+    */
+    "commands": {
+        "run": {
+            "description": "run odin project",
+            "cmd": [
+                "odin run ."
+            ]
+        },
+        "build": {
+            "description": "build odin project",
+            "cmd": [
+                "odin build ."
+            ]
+        },
+        "clean": {
+            "description": "clean odin project",
+            "cmd": [
+                "echo Cleaning up... &&",
+                "if exist eepy.exe del eepy.exe"
+            ]
+        }
+    }
+}
