@@ -1,9 +1,12 @@
 package eepy
 
+import "core:io"
+import "core:path/filepath"
 import "core:strings"
 import "core:fmt"
 import "core:os"
 import "core:encoding/json"
+
 EepyCommand :: struct {
     description: string `json:"description"`, 
     cmd: []string `json:"cmd"`
@@ -21,19 +24,29 @@ EepyConfig :: struct {
 
 EEPY_FILE :: "eepy.jsonc"
 
-try_create_default_eepy_config :: proc() -> bool {
-    content, err := json.marshal(get_default_eepy_config())
-    if err != nil {
-        return false
+try_create_default_eepy_config :: proc() -> (err_msg: string, ok: bool) {
+    ok = false
+    content, marshal_err := json.marshal(get_default_eepy_config())
+    if marshal_err != nil {
+        switch _ in marshal_err {
+            case io.Error:
+                err_msg = os.error_string(marshal_err.(io.Error))
+                return
+
+            case json.Marshal_Data_Error:
+                err_msg = "error marshaling eepy.jsonc file"
+                return
+        }
     }
 
     path := get_eepy_file_path()
-    ok := os.write_entire_file(path, content)
-    if !ok {
-        return false
+    err := os.write_entire_file_or_err(path, content)
+    if err != nil {
+        err_msg = os.error_string(err)
+        return
     }
-
-    return true
+    ok = true
+    return
 }
 
 try_get_eepy_config :: proc() -> (EepyConfig, bool) {
@@ -55,15 +68,17 @@ try_get_eepy_config :: proc() -> (EepyConfig, bool) {
 }
 
 get_eepy_file_path :: proc() -> string {
-    return strings.join({os.get_current_directory(), EEPY_FILE}, "/")
+    return filepath.join({os.get_current_directory(), EEPY_FILE})
 }
 
 @(private)
 get_default_eepy_config :: proc() -> EepyConfig {
-    eepy_commands: map[string]EepyCommand = {}
-    eepy_commands["hello"] = EepyCommand{
-        description = "prints an eepy hello message",
-        cmd = []string{"echo", "haiii !!1! :3"}
+    eepy_commands := make(map[string]EepyCommand)
+    defer delete(eepy_commands)
+
+    eepy_commands["dummy"] = EepyCommand{
+        description = "empty command",
+        cmd = []string{}
     }
 
     config := EepyConfig{

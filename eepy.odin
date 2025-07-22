@@ -22,34 +22,7 @@ main :: proc() {
     if len(os.args) < 2 {
         config, ok := eepy.try_get_eepy_config()
         if !ok {
-            fmt.println("No eepy.json file found in the current directory. Do you want to create one? (y/n)")
-            choice: []byte = make([]byte, 1)
-            defer delete(choice)
-            choice_str: string
-
-            for {
-                _, err := os.read(os.stdin, choice)
-                if err != nil {
-                    fmt.println("Error reading input:", err)
-                    return
-                }
-
-                choice_str, err = strings.to_lower(string(choice))
-                if err != nil {
-                    fmt.println("Error converting input to string:", err)
-                    return
-                }
-
-                if choice_str == "y" || choice_str == "yes" {
-                    break
-                } else if choice_str == "n" || choice_str == "no" {
-                    fmt.println("Exiting...")
-                    return
-                }
-            }
-
-            if !eepy.try_create_default_eepy_config() {
-                fmt.println("Failed to create default eepy config.")
+            if !try_handle_no_eepy_config() {
                 return
             }
         }
@@ -102,4 +75,43 @@ run_command :: proc(config: eepy.EepyConfig, command: string) {
     } 
     
     fmt.println("[INFO]: executed successfully")
+}
+
+try_handle_no_eepy_config :: proc() -> bool {    
+    fmt.println("No eepy.json file found in the current directory. Do you want to create one? (y/n)")
+    choice: []byte = make([]byte, 1)
+    defer delete(choice)
+    choice_str: string
+
+    for choice_str != "y" && choice_str != "n" {
+        _, err := os.read(os.stdin, choice)
+        if err != nil {
+            fmt.println("Error reading input:", err)
+            return false
+        }
+
+        choice_str, err = strings.to_lower(string(choice[:]))
+        if err != nil {
+            fmt.println("Error converting input to string:", err)
+            return false
+        }
+    }
+
+    switch choice_str {
+        case "n":
+            fmt.println("Bye byeee... :(")
+            return false
+        
+        case "y":
+            fmt.printfln("Yay, let's create your eepy file at %s", eepy.get_eepy_file_path())
+            err_msg, create_ok := eepy.try_create_default_eepy_config()
+            if !create_ok {
+                fmt.println(err_msg)
+                return false
+            }
+
+            fmt.println("Successfully created eepy.jsonc file! Happy eepy-ing :3")
+    }
+    
+    return true
 }
