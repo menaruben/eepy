@@ -4,10 +4,18 @@
         The `executable` specifies the shell program, and `args` are the arguments passed to it.
     */
     "shell": {
-        "executable": "cmd.exe",
-        "args": [
-            "/c"
-        ]
+        "windows": {
+            "executable": "cmd.exe",
+            "args": [
+                "/c"
+            ]
+        },
+        "linux": {
+            "executable": "bash",
+            "args": [
+                "-c"
+            ]
+        }
     },
     /*
         The `commands` section defines custom commands that can be executed.

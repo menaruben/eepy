@@ -47,9 +47,18 @@ run_command :: proc(config: eepy.EepyConfig, command: string) {
         return
     }
 
+    os_name := ODIN_OS
+    os_name_str, _ := fmt.enum_value_to_string(os_name)
+    lower_os_name := strings.to_lower(os_name_str)
+    os_shell, shell_exists := config.shell[lower_os_name]
+    if !shell_exists {
+        fmt.println("No shell configuration found for OS:", os_name)
+        return
+    }
+
     executable_command := []string{
-        config.shell.executable, 
-        strings.join(config.shell.args, " "),
+        os_shell.executable, 
+        strings.join(os_shell.args, " "),
         strings.join(eepy_command.cmd, " "),
     }
 

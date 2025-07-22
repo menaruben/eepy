@@ -19,7 +19,7 @@ EepyShell :: struct {
 
 EepyConfig :: struct {
     commands: map[string]EepyCommand `json:"commands"`,
-    shell: EepyShell `json:"shell"`
+    shell: map[string]EepyShell `json:"shell"`
 }
 
 EEPY_FILE :: "eepy.jsonc"
@@ -81,12 +81,12 @@ get_default_eepy_config :: proc() -> EepyConfig {
         cmd = []string{}
     }
 
+    eepy_shell := make(map[string]EepyShell)
+    defer delete(eepy_shell)
+
     config := EepyConfig{
         commands = eepy_commands, 
-        shell = EepyShell{
-            executable = "sh",
-            args = []string{}
-        }
+        shell = eepy_shell
     }
 
     return config
